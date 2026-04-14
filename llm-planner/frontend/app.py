@@ -13,7 +13,7 @@ st.set_page_config(
 # Sidebar branding
 st.sidebar.title("LLM-Guided Micro-Manufacturing Planner")
 st.sidebar.markdown("**Honours Computer Science Research Project**")
-st.sidebar.markdown("University of [Your University]")
+st.sidebar.markdown("University of Zululand")
 st.sidebar.markdown("---")
 
 # Navigation
