@@ -10,12 +10,13 @@ This application allows local makers to input a product idea and local constrain
 
 ### Prerequisites
 - Docker and Docker Compose
-- Groq API key (sign up at https://groq.com/)
+- Ollama installed and running locally (download from https://ollama.ai/)
+- LLaMA 3.1 8B model pulled in Ollama (`ollama pull llama3.1:8b`)
 
 ### Environment Setup
 1. Clone or download this repository.
 2. Navigate to the `llm-planner` directory.
-3. In `backend/.env`, replace `your_api_key_here` with your actual Groq API key.
+3. Ensure Ollama is running locally and the `llama3.1:8b` model is pulled.
 4. Ensure `frontend/.env` has `BACKEND_URL=http://localhost:8000` (or adjust for Docker).
 
 ### Running the Application
@@ -32,7 +33,7 @@ This application allows local makers to input a product idea and local constrain
 
 ## Architecture
 
-- **Backend**: FastAPI with Groq LLM integration
+- **Backend**: FastAPI with local Ollama LLM integration
 - **Frontend**: Streamlit with form inputs and plan display
 - **Communication**: HTTP via httpx, no direct imports
 
@@ -44,6 +45,6 @@ To run locally without Docker:
 
 ## Notes
 
-- All secrets are loaded from environment variables.
-- The application uses a configurable Groq model (`GROQ_MODEL`) with a supported default.
+- All secrets are loaded from environment variables (none required for local Ollama).
+- The application uses the local Ollama `llama3.1:8b` model.
 - Plans are generated with both constrained and unconstrained versions for comparison.
