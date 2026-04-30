@@ -1,10 +1,15 @@
 """LLM service module for generating manufacturing plans using Ollama local API."""
 
 import ollama
+import httpx
 from models.schemas import PlanRequest
 
 # Model name for Ollama
 MODEL_NAME = "llama3.1:8b"
+
+# FIX: Create httpx Timeout object - this is the correct way to set timeout for Ollama client
+# The timeout parameter is passed directly to ollama.Client() constructor, not to .chat()
+_timeout = httpx.Timeout(120.0)
 
 
 def generate_constrained_plan(request: PlanRequest) -> str:
@@ -21,12 +26,15 @@ def generate_constrained_plan(request: PlanRequest) -> str:
     Provide a step-by-step plan that respects these constraints. Focus on feasibility within the budget and skill level.
     """
     try:
-        response = ollama.chat(
+        # FIX: Pass timeout to ollama.Client() constructor (not to .chat())
+        # The ollama library accepts timeout directly in the constructor via BaseClient
+        client = ollama.Client(host="http://127.0.0.1:11434", timeout=_timeout)
+        response = client.chat(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.7, "num_predict": 1000}
+            options={"temperature": 0.7, "num_predict": 400},
         )
-        return response['message']['content'].strip()
+        return response["message"]["content"].strip()
     except Exception as e:
         return f"Error generating constrained plan: {str(e)}"
 
@@ -41,11 +49,14 @@ def generate_unconstrained_plan(idea: str) -> str:
     Provide a comprehensive step-by-step plan with innovative approaches.
     """
     try:
-        response = ollama.chat(
+        # FIX: Pass timeout to ollama.Client() constructor (not to .chat())
+        # The ollama library accepts timeout directly in the constructor via BaseClient
+        client = ollama.Client(host="http://127.0.0.1:11434", timeout=_timeout)
+        response = client.chat(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.7, "num_predict": 1000}
+            options={"temperature": 0.7, "num_predict": 400},
         )
-        return response['message']['content'].strip()
+        return response["message"]["content"].strip()
     except Exception as e:
         return f"Error generating unconstrained plan: {str(e)}"
