@@ -32,7 +32,7 @@ def generate_constrained_plan(request: PlanRequest) -> str:
         response = client.chat(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.7, "num_predict": 400},
+            options={"temperature": 0.7, "num_predict": 200},
         )
         return response["message"]["content"].strip()
     except Exception as e:
@@ -55,7 +55,7 @@ def generate_unconstrained_plan(idea: str) -> str:
         response = client.chat(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.7, "num_predict": 400},
+            options={"temperature": 0.7, "num_predict": 200},
         )
         return response["message"]["content"].strip()
     except Exception as e:
