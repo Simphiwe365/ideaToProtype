@@ -13,7 +13,7 @@ def get_plan(data: dict) -> dict:
     """Send a plan request to the backend and return the response."""
     url = f"{BACKEND_URL}/api/plan"
     try:
-        response = httpx.post(url, json=data, timeout=30.0)
+        response = httpx.post(url, json=data, timeout=180.0)
         response.raise_for_status()
         return response.json()
     except httpx.HTTPStatusError as e:
