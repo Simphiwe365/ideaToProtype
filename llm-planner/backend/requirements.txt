@@ -1,5 +1,4 @@
 fastapi
 uvicorn
 python-dotenv
-ollama
-httpx
+groq==0.4.1
