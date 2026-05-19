@@ -31,7 +31,6 @@ client = Groq(api_key=api_key)
 
 def generate_constrained_plan(request: PlanRequest) -> str:
     try:
-<<<<<<< HEAD
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
@@ -69,15 +68,6 @@ Keep costs under budget. Match skill level difficulty."""
                 }
             ],
             max_tokens=1024
-=======
-        # FIX: Pass timeout to ollama.Client() constructor (not to .chat())
-        # The ollama library accepts timeout directly in the constructor via BaseClient
-        client = ollama.Client(host="http://127.0.0.1:11434", timeout=_timeout)
-        response = client.chat(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.7, "num_predict": 200},
->>>>>>> 240ff365a7a1a841a81f890b52eef3926e5a4f36
         )
         return response.choices[0].message.content or ""
     except Exception as e:
@@ -87,7 +77,6 @@ Keep costs under budget. Match skill level difficulty."""
 def generate_unconstrained_plan(idea: str) -> str:
     """Generate an unconstrained manufacturing plan for the product idea."""
     try:
-<<<<<<< HEAD
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
@@ -122,15 +111,6 @@ Make this the best possible prototype design."""
                 }
             ],
             max_tokens=1024
-=======
-        # FIX: Pass timeout to ollama.Client() constructor (not to .chat())
-        # The ollama library accepts timeout directly in the constructor via BaseClient
-        client = ollama.Client(host="http://127.0.0.1:11434", timeout=_timeout)
-        response = client.chat(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": prompt}],
-            options={"temperature": 0.7, "num_predict": 200},
->>>>>>> 240ff365a7a1a841a81f890b52eef3926e5a4f36
         )
         return response.choices[0].message.content or ""
     except Exception as e:
