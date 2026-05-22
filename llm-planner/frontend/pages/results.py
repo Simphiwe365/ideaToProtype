@@ -1,6 +1,7 @@
 """Results page displaying history of generated plans."""
 
 import streamlit as st
+from components.model_3d_viewer import display_3d_visualization
 
 
 def main():
@@ -30,6 +31,12 @@ def main():
             st.write(result["unconstrained_plan"])
 
         st.markdown(f"**Estimated Cost:** R{result['estimated_cost_zar']}")
+        
+        # Display 3D model if available
+        if "model_3d_config" in result and result["model_3d_config"]:
+            st.divider()
+            display_3d_visualization(result["model_3d_config"])
+        
         st.divider()
 
 

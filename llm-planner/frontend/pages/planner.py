@@ -2,6 +2,7 @@
 
 import streamlit as st
 from components.constraint_form import constraint_form
+from components.model_3d_viewer import display_3d_visualization
 from api_client import get_plan
 
 
@@ -64,6 +65,11 @@ def main():
 
             _render_plan_overview(result)
             _render_plan_results(result)
+            
+            # Display 3D model if available
+            if "model_3d_config" in result and result["model_3d_config"]:
+                st.markdown("---")
+                display_3d_visualization(result["model_3d_config"])
 
         except Exception as e:
             st.error(f"Error generating plan: {str(e)}")

@@ -1,7 +1,7 @@
 """Pydantic models for request and response schemas in the LLM planner API."""
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Any, Optional
 
 
 class PlanRequest(BaseModel):
@@ -11,6 +11,7 @@ class PlanRequest(BaseModel):
     materials: List[str]
     budget_zar: int
     skill_level: str  # "beginner", "intermediate", "advanced"
+    include_3d_model: Optional[bool] = True  # Generate 3D model visualization
 
 
 class PlanResponse(BaseModel):
@@ -19,3 +20,4 @@ class PlanResponse(BaseModel):
     unconstrained_plan: str
     estimated_cost_zar: int
     steps: List[str]
+    model_3d_config: Optional[Dict[str, Any]] = None  # 3D model configuration for Three.js
