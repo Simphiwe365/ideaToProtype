@@ -1,7 +1,7 @@
 """Results page displaying history of generated plans."""
 
 import streamlit as st
-from components.model_3d_viewer import display_3d_visualization
+from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
 
 
 def main():
@@ -32,10 +32,15 @@ def main():
 
         st.markdown(f"**Estimated Cost:** R{result['estimated_cost_zar']}")
         
-        # Display 3D model if available
-        if "model_3d_config" in result and result["model_3d_config"]:
-            st.divider()
-            display_3d_visualization(result["model_3d_config"])
+        # Download button for this plan
+        pdf_content = generate_plan_pdf(request, result)
+        st.download_button(
+            label=f"Download Plan {index} as PDF",
+            data=pdf_content,
+            file_name=get_pdf_filename(request["idea"]),
+            mime="application/pdf",
+            key=f"download_pdf_{index}"
+        )
         
         st.divider()
 

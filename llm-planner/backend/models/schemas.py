@@ -20,4 +20,3 @@ class PlanResponse(BaseModel):
     unconstrained_plan: str
     estimated_cost_zar: int
     steps: List[str]
-    model_3d_config: Optional[Dict[str, Any]] = None  # 3D model configuration for Three.js

@@ -1,5 +1,4 @@
 streamlit
 httpx
 python-dotenv
-plotly
-numpy
+reportlab
