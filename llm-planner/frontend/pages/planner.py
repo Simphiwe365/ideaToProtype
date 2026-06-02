@@ -2,8 +2,8 @@
 
 import streamlit as st
 from components.constraint_form import constraint_form
-from components.model_3d_viewer import display_3d_visualization
 from api_client import get_plan
+from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
 
 
 def _render_plan_overview(result: dict[str, any]) -> None:
@@ -66,10 +66,18 @@ def main():
             _render_plan_overview(result)
             _render_plan_results(result)
             
-            # Display 3D model if available
-            if "model_3d_config" in result and result["model_3d_config"]:
-                st.markdown("---")
-                display_3d_visualization(result["model_3d_config"])
+            # Download button
+            st.markdown("---")
+            st.subheader("Download Your Plan")
+            
+            pdf_content = generate_plan_pdf(data, result)
+            st.download_button(
+                label="Download as PDF",
+                data=pdf_content,
+                file_name=get_pdf_filename(data["idea"]),
+                mime="application/pdf",
+            )
+            st.caption("💡 Save your plan as a PDF for offline viewing or sharing with others.")
 
         except Exception as e:
             st.error(f"Error generating plan: {str(e)}")
