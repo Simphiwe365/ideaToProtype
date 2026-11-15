@@ -202,16 +202,10 @@ def generate_direct_plan(data: dict) -> dict:
 
         return cleaned.strip()
 
-    def _generate_combined_plan(idea_text: str) -> str:
-        prompt = f"""Generate one complete workshop plan document for this product idea using the exact structure and labels below.
+    def _generate_single_plan(idea_text: str, constrained: bool) -> str:
+        prompt = f"""Generate one complete, fully finished {'constrained' if constrained else 'unconstrained'} workshop plan for this product idea.
 
-The response must contain both the constrained and unconstrained plan sections in this exact order:
-1. Manufacturing Plan
-2. PROJECT DETAILS
-3. CONSTRAINED PLAN
-4. UNCONSTRAINED PLAN
-
-Do not add any extra headings, summary text, or markdown formatting.
+Use the exact structure below and finish the full plan all the way to the final checklist and safety note. Do not stop early, do not cut off at step 3, and do not repeat the start of the plan again.
 
 INPUT CONTEXT:
 IDEA: {idea_text}
@@ -235,7 +229,7 @@ Tools [required tools and any already owned tools]
 Materials [required materials and any already owned materials]
 Estimated Cost R[total cost in ZAR]
 
-CONSTRAINED PLAN
+{'CONSTRAINED PLAN' if constrained else 'UNCONSTRAINED PLAN'}
 PROTOTYPE DESCRIPTION: [1-2 clear sentences explaining the prototype and what it does]
 REQUIRED TOOLS AND MATERIALS:
 - [Item name] ([quantity]): R[price] × [quantity] = R[total]
@@ -314,117 +308,27 @@ FINAL CHECKLIST:
 REPAIRABILITY TIP: [one practical repair tip]
 SAFETY NOTE: [one safety note]
 
-UNCONSTRAINED PLAN
-PROTOTYPE DESCRIPTION: [1-2 clear sentences explaining the optimal version]
-REQUIRED TOOLS AND MATERIALS:
-- [Item name] ([quantity]): R[price] × [quantity] = R[total]
-* [reason it is needed]
-- [Item name] ([quantity]): R[price] × [quantity] = R[total]
-* [reason it is needed]
-SUBTOTAL FOR MATERIALS & TOOLS: R[total]
-REMAINING BUDGET: R[remaining amount]
-BUILD STEPS:
-STEP 1: [short title].
-- Tools/Materials needed for this step: [exact items]
-- How to do it:
-1. [exact step 1]
-2. [exact step 2]
-3. [exact step 3]
-- Measurement check: [specific measurement or size to verify]
-- Safety warning: [specific safety reminder]
-- Time needed: [time]
-
-STEP 2: [short title].
-- Tools/Materials needed for this step: [exact items]
-- How to do it:
-1. [exact step 1]
-2. [exact step 2]
-3. [exact step 3]
-- Measurement check: [specific measurement or size to verify]
-- Safety warning: [specific safety reminder]
-- Time needed: [time]
-
-STEP 3: [short title].
-- Tools/Materials needed for this step: [exact items]
-- How to do it:
-1. [exact step 1]
-2. [exact step 2]
-3. [exact step 3]
-- Measurement check: [specific measurement or size to verify]
-- Safety warning: [specific safety reminder]
-- Time needed: [time]
-
-STEP 4: [short title].
-- Tools/Materials needed for this step: [exact items]
-- How to do it:
-1. [exact step 1]
-2. [exact step 2]
-3. [exact step 3]
-- Measurement check: [specific measurement or size to verify]
-- Safety warning: [specific safety reminder]
-- Time needed: [time]
-
-STEP 5: [short title].
-- Tools/Materials needed for this step: [exact items]
-- How to do it:
-1. [exact step 1]
-2. [exact step 2]
-3. [exact step 3]
-- Measurement check: [specific measurement or size to verify]
-- Safety warning: [specific safety reminder]
-- Time needed: [time]
-
-STEP 6: [short title].
-- Tools/Materials needed for this step: [exact items]
-- How to do it:
-1. [exact step 1]
-2. [exact step 2]
-3. [exact step 3]
-- Measurement check: [specific measurement or size to verify]
-- Safety warning: [specific safety reminder]
-- Time needed: [time]
-
-FINAL CHECKLIST:
-- [final checklist item 1]
-- [final checklist item 2]
-- [final checklist item 3]
-- [final checklist item 4]
-
-REPAIRABILITY TIP: [one practical repair tip]
-SAFETY NOTE: [one safety note]
-
-STRICT RULES:
-- Use exactly the labels and order shown above.
-- Keep plain text only; no markdown, no bold, no extra summary text.
-- Include realistic measurements in mm or cm where relevant.
-- Every required tool/material must be listed with a cost line like "Item (1): R10 × 1 = R10".
-- Keep the final total aligned with the subtotal and budget.
-- If the plan exceeds budget, state the overage clearly in REMAINING BUDGET.
-- Use practical workshop language.
-- Produce both the constrained and unconstrained plan sections in one final response.
-- Do not invent extra sections outside the template.
+CRITICAL REQUIREMENTS:
+- Complete every section through the final safety note.
+- Do not stop after step 3 or early in the build sequence.
+- Use the exact labels shown above, in the same order.
+- Use plain text only; no markdown titles or extra summary text.
+- Keep the total cost and remaining budget consistent with the real build.
+- Include all required tool and material costs in the cost list.
+- Use realistic workshop measurements and steps.
 """
         response = client.chat.completions.create(
             model="openai/gpt-oss-120b",
             messages=[
-                {"role": "system", "content": "You are a practical prototype planning assistant for local makers. Produce clear, sequential workshop instructions that are easy to follow on a bench or in a small workshop."},
+                {"role": "system", "content": "You are a practical prototype planning assistant for local makers. Produce a complete, sequential workshop plan and finish the final checklist and safety note."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=1500,
+            max_tokens=1800,
         )
         return _sanitize_generated_plan(response.choices[0].message.content or "")
 
-    full_plan = _generate_combined_plan(idea)
-    constrained_start = full_plan.find("CONSTRAINED PLAN")
-    unconstrained_start = full_plan.find("UNCONSTRAINED PLAN")
-
-    if constrained_start != -1 and unconstrained_start != -1 and unconstrained_start > constrained_start:
-        constrained_plan = full_plan[full_plan.find("Manufacturing Plan"):unconstrained_start].strip()
-        unconstrained_plan = full_plan[unconstrained_start:].strip()
-    else:
-        constrained_plan = _sanitize_generated_plan(full_plan)
-        unconstrained_plan = _sanitize_generated_plan(full_plan)
-
+    constrained_plan = _generate_single_plan(idea, True)
+    unconstrained_plan = _generate_single_plan(idea, False)
     steps = [step.strip() for step in constrained_plan.splitlines() if step.strip()][:5]
 
     return {
