@@ -1,0 +1,7 @@
+streamlit
+httpx
+python-dotenv
+plotly
+numpy
+groq
+reportlab

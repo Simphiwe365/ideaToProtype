@@ -1,12 +1,9 @@
 """Main planner page for inputting constraints and displaying generated plans."""
 
 import streamlit as st
-from components.constraint_form import constraint_form
 from api_client import get_plan
-<<<<<<< HEAD
+from components.constraint_form import constraint_form
 from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
-=======
-from pages.results import generate_plan_pdf
 
 
 def _render_cost_breakdown(result: dict[str, any]) -> None:
@@ -37,7 +34,6 @@ def _render_cost_breakdown(result: dict[str, any]) -> None:
                 st.write(f"- {item['name']}: R{item['price']}")
         else:
             st.write("- None")
->>>>>>> 6b53d89 (Add unit tests for API client functions and plan PDF generation)
 
 
 def _render_plan_overview(result: dict[str, any]) -> None:
@@ -101,12 +97,9 @@ def main():
 
             _render_plan_overview(result)
             _render_plan_results(result)
-<<<<<<< HEAD
-            
-            # Download button
+
             st.markdown("---")
             st.subheader("Download Your Plan")
-            
             pdf_content = generate_plan_pdf(data, result)
             st.download_button(
                 label="Download as PDF",
@@ -115,16 +108,6 @@ def main():
                 mime="application/pdf",
             )
             st.caption("💡 Save your plan as a PDF for offline viewing or sharing with others.")
-=======
-
-            pdf_data = generate_plan_pdf(data, result)
-            st.download_button(
-                label="📄 Download Current Plan as PDF",
-                data=pdf_data,
-                file_name=f"plan_{data['idea'][:20].replace(' ', '_')}.pdf",
-                mime="application/pdf",
-            )
->>>>>>> 6b53d89 (Add unit tests for API client functions and plan PDF generation)
 
         except Exception as e:
             st.error(f"Error generating plan: {str(e)}")
