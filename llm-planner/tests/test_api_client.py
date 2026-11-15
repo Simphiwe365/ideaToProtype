@@ -96,13 +96,7 @@ def test_plan_pdf_download_is_generated():
 def test_plan_pdf_uses_list_format_instead_of_table(monkeypatch):
     import frontend.utils.pdf_generator as pdf_generator_module
 
-    called = {"table": False}
-
-    def mock_table(*args, **kwargs):
-        called["table"] = True
-        raise AssertionError("Table format should not be used in the PDF summary.")
-
-    monkeypatch.setattr(pdf_generator_module, "Table", mock_table)
+    monkeypatch.delattr(pdf_generator_module, "Table", raising=False)
 
     request = {
         "idea": "Simple bench",
@@ -122,7 +116,7 @@ def test_plan_pdf_uses_list_format_instead_of_table(monkeypatch):
     pdf_bytes = pdf_generator_module.generate_plan_pdf(request, result)
 
     assert pdf_bytes.startswith(b"%PDF")
-    assert called["table"] is False
+    assert not hasattr(pdf_generator_module, "Table")
 
 
 def test_clean_plan_text_removes_duplicate_cost_lines():

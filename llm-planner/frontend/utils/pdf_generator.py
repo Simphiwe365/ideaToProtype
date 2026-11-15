@@ -3,7 +3,7 @@
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
 from reportlab.lib import colors
 from io import BytesIO
 from datetime import datetime
@@ -69,31 +69,16 @@ def generate_plan_pdf(request_data: dict, result_data: dict) -> bytes:
     
     # Project Details
     elements.append(Paragraph("PROJECT DETAILS", heading_style))
-    
-    detail_data = [
-        ["Field", "Value"],
-        ["Idea", str(request_data.get('idea', 'N/A'))[:80]],
-        ["Skill Level", str(request_data.get('skill_level', 'N/A')).capitalize()],
-        ["Budget", f"R{request_data.get('budget_zar', 0)}"],
-        ["Tools", ', '.join(request_data.get('tools', []))[:80]],
-        ["Materials", ', '.join(request_data.get('materials', []))[:80]],
-        ["Estimated Cost", f"R{result_data.get('estimated_cost_zar', 0)}"],
+    detail_lines = [
+        f"• Idea: {str(request_data.get('idea', 'N/A'))[:80]}",
+        f"• Skill Level: {str(request_data.get('skill_level', 'N/A')).capitalize()}",
+        f"• Budget: R{request_data.get('budget_zar', 0)}",
+        f"• Tools: {', '.join(request_data.get('tools', []))[:80] or 'None'}",
+        f"• Materials: {', '.join(request_data.get('materials', []))[:80] or 'None'}",
+        f"• Estimated Cost: R{result_data.get('estimated_cost_zar', 0)}",
     ]
-    
-    detail_table = Table(detail_data, colWidths=[1.5*inch, 4*inch])
-    detail_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f77b4')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
-    elements.append(detail_table)
+    for detail in detail_lines:
+        elements.append(Paragraph(detail, normal_style))
     elements.append(Spacer(1, 0.2*inch))
     
     # Constrained Plan
