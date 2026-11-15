@@ -186,6 +186,9 @@ def generate_direct_plan(data: dict) -> dict:
     def _generate_plan(idea_text: str, constrained: bool) -> str:
         prompt = f"""Generate a {'constrained' if constrained else 'ideal'} prototype plan for this product idea.
 
+Use the exact structure and labels below. Do not change the wording, order, or section names. Write in plain text only. No markdown tables, bullet styles outside the template, bold text, or alternate headings.
+
+INPUT CONTEXT:
 IDEA: {idea_text}
 TOOLS TO USE: {tool_summary}
 TOOLS ALREADY AVAILABLE: {available_tool_summary}
@@ -194,23 +197,21 @@ MATERIALS ALREADY AVAILABLE: {available_material_summary}
 BUDGET: R{budget_zar} maximum total
 SKILL LEVEL: {skill_level}
 
-You must match the exact style and structure shown in this example. Do not invent a different format.
-
-OUTPUT EXACTLY in plain text using this structure:
+OUTPUT FORMAT EXACTLY AS FOLLOWS:
 
 Manufacturing Plan
 Generated: [current date and time in YYYY-MM-DD HH:MM:SS format]
 PROJECT DETAILS
 Field Value
-Idea [the exact idea or product concept]
+Idea [exact product concept]
 Skill Level [skill level]
-Budget [budget in ZAR]
-Tools [the required tools and any already owned tools]
-Materials [the required materials and any already owned materials]
-Estimated Cost [total cost in ZAR]
+Budget R[amount]
+Tools [required tools and any already owned tools]
+Materials [required materials and any already owned materials]
+Estimated Cost R[total cost in ZAR]
 
 {'CONSTRAINED PLAN' if constrained else 'UNCONSTRAINED PLAN'}
-PROTOTYPE DESCRIPTION: [1-2 clear sentences explaining what the prototype is and what it does]
+PROTOTYPE DESCRIPTION: [1-2 clear sentences explaining the prototype and what it does]
 REQUIRED TOOLS AND MATERIALS:
 - [Item name] ([quantity]): R[price] × [quantity] = R[total]
 * [reason it is needed]
@@ -288,19 +289,20 @@ FINAL CHECKLIST:
 REPAIRABILITY TIP: [one practical repair tip]
 SAFETY NOTE: [one safety note]
 
-Important rules:
-- Use exactly the same labels and order as shown above.
-- Use plain text only, no markdown headings outside the exact required labels.
-- Include each material or tool in the REQUIRED TOOLS AND MATERIALS section with a cost line like "Item (1): R10 × 1 = R10".
-- Keep the language practical, clear, and step-by-step.
-- Use realistic measurements and workshop actions.
-- Explain how the object is made in sequence.
-- Match the skill level and budget.
-- Omit items already available and set their cost to R0 only if necessary.
-- Keep the total cost consistent with the subtotal and final estimated cost.
-- Do not add extra sections outside the required format.
+STRICT RULES:
+- Use exactly the labels and order shown above.
+- Keep plain text only; do not use markdown headings like ### or **bold**.
+- Include realistic measurements in mm or cm where relevant.
+- Every required tool/material must be listed in REQUIRED TOOLS AND MATERIALS with a cost line like "Item (1): R10 × 1 = R10".
+- Do not repeat cost information elsewhere in a different format.
+- Keep the final total aligned with the subtotal and budget.
+- If the plan is over budget, clearly state the overage in the REMAINING BUDGET line.
+- Use workshop-floor practical language, not vague filler.
+- Include safe, actionable instructions in sequence from start to finish.
+- Do not invent extra sections beyond the required template.
+- Omit anything already available from the cost list unless it is still relevant for the build.
 
-{'Keep costs under budget and match the skill level. Prefer the cheapest workable method while still being realistic.' if constrained else 'Create the best functional version possible, even if it uses a more advanced method.'}
+{'Keep costs under budget and match the skill level. Prefer the cheapest realistic method while still being practical.' if constrained else 'Create the best functional version possible, even if it uses a more advanced method and higher cost.'}
 """
         response = client.chat.completions.create(
             model="openai/gpt-oss-120b",
