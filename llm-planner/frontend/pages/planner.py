@@ -1,9 +1,15 @@
 """Main planner page for inputting constraints and displaying generated plans."""
 
 import streamlit as st
-from frontend.api_client import get_plan
-from frontend.components.constraint_form import constraint_form
-from frontend.utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+
+try:
+    from frontend.api_client import get_plan
+    from frontend.components.constraint_form import constraint_form
+    from frontend.utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+except ModuleNotFoundError:
+    from api_client import get_plan
+    from components.constraint_form import constraint_form
+    from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
 
 
 def _render_cost_breakdown(result: dict[str, any]) -> None:

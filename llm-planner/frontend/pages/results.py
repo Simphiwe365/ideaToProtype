@@ -4,7 +4,11 @@ import re
 from datetime import datetime
 
 import streamlit as st
-from frontend.utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+
+try:
+    from frontend.utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+except ModuleNotFoundError:
+    from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
 
 
 def clean_plan_text(plan_text: str) -> str:

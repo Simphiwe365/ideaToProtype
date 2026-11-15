@@ -9,6 +9,21 @@ from frontend.api_client import (
 from frontend.pages.results import clean_plan_text, generate_plan_pdf
 
 
+def test_frontend_imports_work_when_frontend_root_is_on_path(monkeypatch):
+    import importlib.util
+    import sys
+    from pathlib import Path
+
+    module_path = Path(__file__).resolve().parents[1] / "frontend" / "app.py"
+    sys.path.insert(0, str(module_path.parent))
+    spec = importlib.util.spec_from_file_location("streamlit_frontend_app", module_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert hasattr(module, "planner_main")
+    assert hasattr(module, "results_main")
+
+
 def test_localhost_backend_uses_direct_generation(monkeypatch):
     monkeypatch.delenv("BACKEND_URL", raising=False)
     assert should_use_direct_generation() is True
