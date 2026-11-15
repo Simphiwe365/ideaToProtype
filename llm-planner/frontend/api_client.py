@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from pathlib import Path
 
 import httpx
@@ -183,6 +184,24 @@ def generate_direct_plan(data: dict) -> dict:
     if estimated_cost < 0:
         estimated_cost = 0
 
+    def _sanitize_generated_plan(plan_text: str) -> str:
+        """Remove duplicate Manufacturing Plan blocks and mixed plan sections."""
+        if not plan_text:
+            return ""
+
+        cleaned = plan_text.replace("\r\n", "\n").replace("\r", "\n").strip()
+        manufacturing_matches = list(re.finditer(r"(?m)^Manufacturing Plan\s*$", cleaned))
+        if len(manufacturing_matches) > 1:
+            cleaned = cleaned[manufacturing_matches[-1].start():].strip()
+
+        if "CONSTRAINED PLAN" in cleaned and "UNCONSTRAINED PLAN" in cleaned:
+            constrained_start = cleaned.index("CONSTRAINED PLAN")
+            unconstrained_start = cleaned.index("UNCONSTRAINED PLAN")
+            if unconstrained_start > constrained_start:
+                cleaned = cleaned[constrained_start:unconstrained_start].rstrip()
+
+        return cleaned.strip()
+
     def _generate_plan(idea_text: str, constrained: bool) -> str:
         prompt = f"""Generate a {'constrained' if constrained else 'ideal'} prototype plan for this product idea.
 
@@ -312,7 +331,8 @@ STRICT RULES:
             ],
             max_tokens=1200,
         )
-        return response.choices[0].message.content or ""
+        returned = response.choices[0].message.content or ""
+        return _sanitize_generated_plan(returned)
 
     constrained_plan = _generate_plan(idea, True)
     unconstrained_plan = _generate_plan(idea, False)

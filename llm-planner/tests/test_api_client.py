@@ -114,3 +114,38 @@ PROTOTYPE DESCRIPTION: ...
     assert "Estimated Cost R500" in cleaned
     assert "**Estimated Cost:** R45" not in cleaned
     assert "Estimated Cost:" not in cleaned.split("PROJECT DETAILS")[-1].split("CONSTRAINED PLAN")[0]
+
+
+def test_clean_plan_text_removes_duplicate_plan_blocks():
+    raw_text = """Manufacturing Plan
+Generated: 2026-11-15 14:15:51
+PROJECT DETAILS
+Field Value
+Idea pc wooden stand
+Skill Level Beginner
+Budget R500
+Tools hand tools
+Materials wood
+Estimated Cost R45
+CONSTRAINED PLAN
+UNCONSTRAINED PLAN
+Manufacturing Plan
+Generated: 2026-11-15 09:27:42
+PROJECT DETAILS
+Field Value
+Idea pc wooden stand
+Skill Level beginner
+Budget R500
+Tools hand saw, sandpaper, screwdriver (owned), wooden glue (owned)
+Materials pine timber, plywood, wood screws, clear varnish, wooden glue (owned)
+Estimated Cost R500
+UNCONSTRAINED PLAN
+PROTOTYPE DESCRIPTION: A simple wooden desk stand that holds a PC monitor on a top shelf and a keyboard on a lower shelf.
+"""
+
+    cleaned = clean_plan_text(raw_text)
+
+    assert cleaned.count("Manufacturing Plan") == 1
+    assert "CONSTRAINED PLAN" in cleaned
+    assert "UNCONSTRAINED PLAN" in cleaned
+    assert "Budget R500" in cleaned

@@ -18,6 +18,17 @@ def clean_plan_text(plan_text: str) -> str:
 
     cleaned = str(plan_text)
     cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
+
+    manufacturing_matches = list(re.finditer(r"(?m)^Manufacturing Plan\s*$", cleaned))
+    if len(manufacturing_matches) > 1:
+        cleaned = cleaned[manufacturing_matches[-1].start():].strip()
+
+    if "CONSTRAINED PLAN" in cleaned and "UNCONSTRAINED PLAN" in cleaned:
+        constrained_start = cleaned.index("CONSTRAINED PLAN")
+        unconstrained_start = cleaned.index("UNCONSTRAINED PLAN")
+        if unconstrained_start > constrained_start:
+            cleaned = cleaned[constrained_start:unconstrained_start].rstrip()
+
     cleaned = re.sub(r"\*\*Estimated Cost:\*\*.*?\n?", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"(?im)^\s*Estimated Cost:\s*R\d+(?:,\d{3})*(?:\.\d+)?\s*$", "", cleaned)
     cleaned = re.sub(r"(?im)^\s*ESTIMATED COST:\s*R\d+(?:,\d{3})*(?:\.\d+)?\s*$", "", cleaned)
