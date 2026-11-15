@@ -149,3 +149,36 @@ PROTOTYPE DESCRIPTION: A simple wooden desk stand that holds a PC monitor on a t
     assert "CONSTRAINED PLAN" in cleaned
     assert "UNCONSTRAINED PLAN" in cleaned
     assert "Budget R500" in cleaned
+
+
+def test_plan_completion_checker_requires_final_sections():
+    from frontend.api_client import _is_plan_complete
+
+    incomplete = """Manufacturing Plan
+Generated: 2026-11-15 14:30:00
+PROJECT DETAILS
+Field Value
+Idea wooden laptop stand
+Skill Level Beginner
+Budget R500
+Tools hand tools
+Materials wood
+Estimated Cost R45
+CONSTRAINED PLAN
+PROTOTYPE DESCRIPTION: A simple design.
+BUILD STEPS:
+STEP 1: Cut wood.
+- Tools/Materials needed for this step: hand saw
+- How to do it:
+1. Measure the board.
+2. Cut it.
+3. Sand it.
+- Measurement check: 200 mm.
+- Safety warning: Wear gloves.
+- Time needed: 15 min
+"""
+
+    complete = incomplete + "\nSTEP 2: Assemble pieces.\n- Tools/Materials needed for this step: wood glue\n- How to do it:\n1. Apply glue.\n2. Align pieces.\n3. Clamp them.\n- Measurement check: All edges match.\n- Safety warning: Keep fingers clear.\n- Time needed: 20 min\n\nSTEP 3: Sand and finish.\n- Tools/Materials needed for this step: sandpaper\n- How to do it:\n1. Sand edges.\n2. Clean dust.\n3. Apply finish.\n- Measurement check: Surface is smooth.\n- Safety warning: Wear dust mask.\n- Time needed: 20 min\n\nSTEP 4: Fit the stand.\n- Tools/Materials needed for this step: clamp\n- How to do it:\n1. Place the stand.\n2. Check balance.\n3. Tighten if needed.\n- Measurement check: The base is level.\n- Safety warning: Check for sharp edges.\n- Time needed: 10 min\n\nSTEP 5: Test the stand.\n- Tools/Materials needed for this step: measuring tape\n- How to do it:\n1. Place laptop.\n2. Confirm fit.\n3. Adjust.\n- Measurement check: The laptop sits level.\n- Safety warning: Test on a flat table.\n- Time needed: 10 min\n\nSTEP 6: Finish and inspect.\n- Tools/Materials needed for this step: cloth, finish\n- How to do it:\n1. Wipe the finish.\n2. Inspect joints.\n3. Clean the work area.\n- Measurement check: Surface is even and stable.\n- Safety warning: Allow finish to dry fully.\n- Time needed: 15 min\n\nFINAL CHECKLIST:\n- Check measurements.\n- Confirm stability.\n- Sand sharp edges.\n- Test the laptop fit.\n\nREPAIRABILITY TIP: Keep a small sanding block ready.\nSAFETY NOTE: Wear goggles and work in a ventilated area."
+
+    assert _is_plan_complete(incomplete) is False
+    assert _is_plan_complete(complete) is True

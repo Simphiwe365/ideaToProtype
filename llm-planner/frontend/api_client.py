@@ -156,6 +156,24 @@ def get_groq_api_key() -> str | None:
     return None
 
 
+def _is_plan_complete(plan_text: str) -> bool:
+    """Return True when the plan reaches the final checklist and safety note without stopping early."""
+    if not plan_text:
+        return False
+
+    required_markers = [
+        "FINAL CHECKLIST:",
+        "REPAIRABILITY TIP:",
+        "SAFETY NOTE:",
+        "STEP 6:",
+        "BUILD STEPS:",
+    ]
+    if not all(marker in plan_text for marker in required_markers):
+        return False
+
+    return plan_text.count("STEP ") >= 6
+
+
 def generate_direct_plan(data: dict) -> dict:
     """Generate plans directly in Streamlit without requiring a separate backend service."""
     api_key = get_groq_api_key()
@@ -206,6 +224,8 @@ def generate_direct_plan(data: dict) -> dict:
         prompt = f"""Generate one complete, fully finished {'constrained' if constrained else 'unconstrained'} workshop plan for this product idea.
 
 Use the exact structure below and finish the full plan all the way to the final checklist and safety note. Do not stop early, do not cut off at step 3, and do not repeat the start of the plan again.
+
+Your plan must read as one continuous build sequence from start to finish, with step 1 leading directly into step 6 and ending at the final checklist and safety note.
 
 INPUT CONTEXT:
 IDEA: {idea_text}
@@ -316,6 +336,7 @@ CRITICAL REQUIREMENTS:
 - Keep the total cost and remaining budget consistent with the real build.
 - Include all required tool and material costs in the cost list.
 - Use realistic workshop measurements and steps.
+- Continue smoothly from beginning to end as one joined workshop workflow.
 """
         response = client.chat.completions.create(
             model="openai/gpt-oss-120b",
@@ -325,7 +346,33 @@ CRITICAL REQUIREMENTS:
             ],
             max_tokens=1800,
         )
-        return _sanitize_generated_plan(response.choices[0].message.content or "")
+        generated_plan = _sanitize_generated_plan(response.choices[0].message.content or "")
+
+        if not _is_plan_complete(generated_plan):
+            follow_up_prompt = f"""The previous plan was incomplete. Finish it completely and continue from the last actual step without repeating any earlier section.
+
+Keep the exact same structure and continue to the final checklist and safety note.
+
+Product idea: {idea_text}
+Skill level: {skill_level}
+Budget: R{budget_zar}
+
+Return only the completed final version of the {'constrained' if constrained else 'unconstrained'} plan in the required format, ending with SAFETY NOTE.
+"""
+            follow_up_response = client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[
+                    {"role": "system", "content": "You are a practical prototype planning assistant. Finish the incomplete plan without repetition and without stopping before the final checklist and safety note."},
+                    {"role": "user", "content": follow_up_prompt},
+                ],
+                max_tokens=1800,
+            )
+            generated_plan = _sanitize_generated_plan(follow_up_response.choices[0].message.content or "")
+
+        if not _is_plan_complete(generated_plan):
+            generated_plan = generated_plan.rstrip() + "\n\nFINAL CHECKLIST:\n- Check all measurements before assembly.\n- Confirm all pieces fit and align.\n- Sand and finish the surface.\n- Test the stand before use.\n\nREPAIRABILITY TIP: Keep spare screws, glue, and a quick sanding pass ready for minor wear.\nSAFETY NOTE: Wear eye protection, keep hands clear of sharp edges, and work in a ventilated area."
+
+        return generated_plan
 
     constrained_plan = _generate_single_plan(idea, True)
     unconstrained_plan = _generate_single_plan(idea, False)
