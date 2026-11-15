@@ -3,7 +3,41 @@
 import streamlit as st
 from components.constraint_form import constraint_form
 from api_client import get_plan
+<<<<<<< HEAD
 from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+=======
+from pages.results import generate_plan_pdf
+
+
+def _render_cost_breakdown(result: dict[str, any]) -> None:
+    """Render a detailed list of materials and tools that still need to be bought."""
+    breakdown = result.get("cost_breakdown", {})
+    material_items = breakdown.get("materials", [])
+    tool_items = breakdown.get("tools", [])
+
+    if not material_items and not tool_items:
+        st.info("You already have everything needed for this plan, so no additional purchases are required.")
+        return
+
+    st.markdown("#### Cost Breakdown")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("**Materials to buy**")
+        if material_items:
+            for item in material_items:
+                st.write(f"- {item['name']}: R{item['price']}")
+        else:
+            st.write("- None")
+
+    with col2:
+        st.markdown("**Tools to buy**")
+        if tool_items:
+            for item in tool_items:
+                st.write(f"- {item['name']}: R{item['price']}")
+        else:
+            st.write("- None")
+>>>>>>> 6b53d89 (Add unit tests for API client functions and plan PDF generation)
 
 
 def _render_plan_overview(result: dict[str, any]) -> None:
@@ -23,6 +57,8 @@ def _render_plan_overview(result: dict[str, any]) -> None:
             "This constrained plan aims for resource efficiency within your budget and tool availability. "
             "The unconstrained plan offers creative alternatives with potentially different costs and skill requirements."
         )
+
+    _render_cost_breakdown(result)
 
 
 def _render_plan_results(result: dict[str, any]) -> None:
@@ -65,6 +101,7 @@ def main():
 
             _render_plan_overview(result)
             _render_plan_results(result)
+<<<<<<< HEAD
             
             # Download button
             st.markdown("---")
@@ -78,6 +115,16 @@ def main():
                 mime="application/pdf",
             )
             st.caption("💡 Save your plan as a PDF for offline viewing or sharing with others.")
+=======
+
+            pdf_data = generate_plan_pdf(data, result)
+            st.download_button(
+                label="📄 Download Current Plan as PDF",
+                data=pdf_data,
+                file_name=f"plan_{data['idea'][:20].replace(' ', '_')}.pdf",
+                mime="application/pdf",
+            )
+>>>>>>> 6b53d89 (Add unit tests for API client functions and plan PDF generation)
 
         except Exception as e:
             st.error(f"Error generating plan: {str(e)}")

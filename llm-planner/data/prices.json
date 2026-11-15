@@ -1,0 +1,31 @@
+{
+  "materials": {
+    "wood": 45,
+    "metal": 120,
+    "plastic": 30,
+    "cardboard": 20,
+    "glue": 18,
+    "paint": 25,
+    "rubber": 35,
+    "fabric": 40,
+    "cable": 22,
+    "wire": 22,
+    "foam": 28,
+    "tile": 60,
+    "glass": 90
+  },
+  "tools": {
+    "saw": 60,
+    "drill": 120,
+    "sander": 80,
+    "hammer": 45,
+    "pliers": 35,
+    "scissors": 25,
+    "measuring tape": 20,
+    "screwdriver": 30,
+    "nails": 15,
+    "sandpaper": 10,
+    "brush": 12,
+    "wrench": 42
+  }
+}

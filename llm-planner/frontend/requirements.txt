@@ -1,4 +1,10 @@
 streamlit
 httpx
 python-dotenv
+<<<<<<< HEAD
+=======
+plotly
+numpy
+groq
+>>>>>>> 6b53d89 (Add unit tests for API client functions and plan PDF generation)
 reportlab

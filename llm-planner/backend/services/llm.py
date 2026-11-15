@@ -17,7 +17,7 @@ from groq import Groq
 from models.schemas import PlanRequest
 
 # Change this to swap models across the entire file
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "openai/gpt-oss-120b"
 
 load_dotenv()
 
