@@ -9,16 +9,16 @@ from io import BytesIO
 from datetime import datetime
 
 
-def generate_plan_pdf(request_data: dict, result_data: dict) -> BytesIO:
+def generate_plan_pdf(request_data: dict, result_data: dict) -> bytes:
     """
     Generate a PDF document from the plan data using ReportLab.
-    
+
     Args:
         request_data: The original request (idea, tools, materials, budget, skill level)
         result_data: The plan result (constrained_plan, unconstrained_plan, estimated_cost_zar)
-    
+
     Returns:
-        BytesIO object containing the PDF content
+        Raw PDF bytes suitable for Streamlit download buttons and tests.
     """
     # Create BytesIO object to store PDF
     pdf_buffer = BytesIO()
@@ -118,7 +118,7 @@ def generate_plan_pdf(request_data: dict, result_data: dict) -> BytesIO:
     try:
         doc.build(elements)
         pdf_buffer.seek(0)
-        return pdf_buffer
+        return pdf_buffer.getvalue()
     except Exception as e:
         raise Exception(f"Error generating PDF: {str(e)}")
 

@@ -1,9 +1,24 @@
 """Results page displaying history of generated plans."""
 
+import re
 from datetime import datetime
 
 import streamlit as st
-from utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+from frontend.utils.pdf_generator import generate_plan_pdf, get_pdf_filename
+
+
+def clean_plan_text(plan_text: str) -> str:
+    """Normalize raw LLM text for cleaner rendering in the results page."""
+    if not plan_text:
+        return ""
+
+    cleaned = str(plan_text)
+    cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
+    cleaned = re.sub(r"\*\*Estimated Cost:\*\*.*?\n?", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"(?im)^\s*Estimated Cost:\s*R\d+(?:,\d{3})*(?:\.\d+)?\s*$", "", cleaned)
+    cleaned = re.sub(r"(?im)^\s*ESTIMATED COST:\s*R\d+(?:,\d{3})*(?:\.\d+)?\s*$", "", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    return cleaned.strip()
 
 
 def _generate_download_content(request, result):
@@ -71,18 +86,17 @@ def main():
         st.markdown(f"**Materials required:** {', '.join(request.get('materials', []))}")
         st.markdown(f"**Materials already available:** {', '.join(request.get('available_materials', [])) if request.get('available_materials') else 'None'}")
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("#### Constrained Plan")
-            st.write(result["constrained_plan"])
+        constrained_text = clean_plan_text(result.get("constrained_plan", ""))
+        unconstrained_text = clean_plan_text(result.get("unconstrained_plan", ""))
 
-        with col2:
-            st.markdown("#### Unconstrained Plan")
-            st.write(result["unconstrained_plan"])
+        st.markdown("#### Constrained Plan")
+        st.code(constrained_text, language="text")
+
+        st.markdown("#### Unconstrained Plan")
+        st.code(unconstrained_text, language="text")
 
         st.markdown(f"**Estimated Cost:** R{result['estimated_cost_zar']}")
 
-        # Download button for this plan
         pdf_content = generate_plan_pdf(request, result)
         st.download_button(
             label=f"Download Plan {index} as PDF",

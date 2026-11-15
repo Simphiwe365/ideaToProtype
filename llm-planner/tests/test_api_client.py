@@ -6,7 +6,7 @@ from frontend.api_client import (
     get_groq_api_key,
     should_use_direct_generation,
 )
-from frontend.pages.results import generate_plan_pdf
+from frontend.pages.results import clean_plan_text, generate_plan_pdf
 
 
 def test_localhost_backend_uses_direct_generation(monkeypatch):
@@ -76,3 +76,26 @@ def test_plan_pdf_download_is_generated():
 
     assert pdf_bytes.startswith(b"%PDF")
     assert len(pdf_bytes) > 1000
+
+
+def test_clean_plan_text_removes_duplicate_cost_lines():
+    raw_text = """Manufacturing Plan
+Generated: 2026-06-03 22:43:37
+PROJECT DETAILS
+Field Value
+Idea simple bench
+Skill Level beginner
+Budget R500
+Estimated Cost R500
+
+CONSTRAINED PLAN
+PROTOTYPE DESCRIPTION: ...
+
+**Estimated Cost:** R45
+"""
+
+    cleaned = clean_plan_text(raw_text)
+
+    assert "Estimated Cost R500" in cleaned
+    assert "**Estimated Cost:** R45" not in cleaned
+    assert "Estimated Cost:" not in cleaned.split("PROJECT DETAILS")[-1].split("CONSTRAINED PLAN")[0]
